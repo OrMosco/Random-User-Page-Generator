@@ -1,4 +1,6 @@
 import HeroScene from "@/components/HeroSceneDynamic";
+import Link from "next/link";
+import { projects } from "@/data/projects";
 
 const skills = [
   { name: "React / Next.js", level: 95 },
@@ -7,33 +9,6 @@ const skills = [
   { name: "Node.js", level: 80 },
   { name: "WebGL / GLSL", level: 75 },
   { name: "Python", level: 70 },
-];
-
-const projects = [
-  {
-    title: "3D Geometry Explorer",
-    tags: ["Three.js", "R3F", "WebGL"],
-    year: "2025",
-    desc: "Interactive parametric geometry viewer with wireframe / solid toggle and real-time parameter controls.",
-  },
-  {
-    title: "Particle Field",
-    tags: ["Three.js", "GLSL", "Canvas"],
-    year: "2025",
-    desc: "50,000-particle system driven by simplex noise, reacting to mouse input in real time.",
-  },
-  {
-    title: "Blueprint Dashboard",
-    tags: ["React", "TypeScript", "D3"],
-    year: "2024",
-    desc: "Data visualisation dashboard with animated SVG charts and live WebSocket feeds.",
-  },
-  {
-    title: "Procedural City",
-    tags: ["Three.js", "Procedural", "R3F"],
-    year: "2024",
-    desc: "Algorithmically generated low-poly cityscape with dynamic lighting and fog.",
-  },
 ];
 
 export default function Home() {
@@ -95,6 +70,13 @@ export default function Home() {
               Hire me
             </a>
           </div>
+          {/* node hint */}
+          <p
+            className="font-mono text-[10px] tracking-[0.25em] uppercase"
+            style={{ color: "var(--muted)", opacity: 0.6 }}
+          >
+            ↗ click a node to explore a project
+          </p>
         </div>
 
         {/* Scroll indicator */}
@@ -136,8 +118,9 @@ export default function Home() {
 
           <div className="grid gap-6 sm:grid-cols-2">
             {projects.map((p) => (
-              <div
-                key={p.title}
+              <Link
+                key={p.slug}
+                href={`/projects/${p.slug}`}
                 className="group relative rounded-2xl p-6 border transition-all duration-300 cursor-pointer hover:scale-[1.02]"
                 style={{
                   background: "var(--card)",
@@ -178,7 +161,7 @@ export default function Home() {
                     </span>
                   ))}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
