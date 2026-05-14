@@ -1,158 +1,185 @@
 "use client";
 
-import { useRef, useEffect, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Float, Stars } from "@react-three/drei";
+import { useRef, useEffect } from "react";
 import * as THREE from "three";
+import ThreeForceGraph from "three-forcegraph";
 
 /* ─────────────────────────────────────────────
-   Mouse tracker — ref-based, zero re-renders
+   Build a random graph dataset
 ───────────────────────────────────────────── */
-function useMouseNDCRef() {
-  const mouse = useRef({ x: 0, y: 0 });
+function buildGraphData(nodeCount = 60, linkCount = 80) {
+  const GROUPS = 6;
+  const nodes = Array.from({ length: nodeCount }, (_, i) => ({
+    id: i,
+    group: i % GROUPS,
+    val: 1 + Math.random() * 2,
+  }));
 
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, []);
+  const links: { source: number; target: number }[] = [];
+  const added = new Set<string>();
 
-  return mouse;
+  while (links.length < linkCount) {
+    const s = Math.floor(Math.random() * nodeCount);
+    const t = Math.floor(Math.random() * nodeCount);
+    const key = s < t ? `${s}-${t}` : `${t}-${s}`;
+    if (s !== t && !added.has(key)) {
+      added.add(key);
+      links.push({ source: s, target: t });
+    }
+  }
+
+  return { nodes, links };
 }
 
-/* ─────────────────────────────────────────────
-   Central rotating model — TorusKnot + edges
-───────────────────────────────────────────── */
-function HeroModel({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
-  const groupRef = useRef<THREE.Group>(null);
-
-  const { geo, edgesGeo } = useMemo(() => {
-    const g = new THREE.TorusKnotGeometry(1.2, 0.38, 160, 20, 2, 3);
-    return { geo: g, edgesGeo: new THREE.EdgesGeometry(g, 15) };
-  }, []);
-
-  useFrame(({ clock }) => {
-    if (!groupRef.current) return;
-
-    const t = clock.getElapsedTime();
-    const targetX = mouse.current.y * 0.6;
-    const targetY = mouse.current.x * 0.8;
-
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(
-      groupRef.current.rotation.x,
-      targetX,
-      0.05
-    );
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(
-      groupRef.current.rotation.y,
-      targetY + t * 0.12,
-      0.05
-    );
-  });
-
-  return (
-    <group ref={groupRef}>
-      {/* Solid mesh — subtle, mostly transparent */}
-      <mesh geometry={geo}>
-        <meshStandardMaterial
-          color="#0a0a20"
-          metalness={0.8}
-          roughness={0.2}
-          transparent
-          opacity={0.45}
-        />
-      </mesh>
-
-      {/* Edge lines — the "twist" wireframe accent */}
-      <lineSegments geometry={edgesGeo}>
-        <lineBasicMaterial color="#00aaff" transparent opacity={0.9} />
-      </lineSegments>
-    </group>
-  );
-}
+/* Group → accent colour palette */
+const GROUP_COLORS = [
+  "#00aaff",
+  "#6644ff",
+  "#00ffcc",
+  "#ff6644",
+  "#ffcc00",
+  "#ff44aa",
+];
 
 /* ─────────────────────────────────────────────
-   Floating satellite spheres
-───────────────────────────────────────────── */
-function Satellites({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
-  const groupRef = useRef<THREE.Group>(null);
-
-  const positions = useMemo<[number, number, number][]>(
-    () => [
-      [2.8, 0.4, 0],
-      [-2.6, -0.3, 0.5],
-      [0.5, 2.4, 0.8],
-      [-0.4, -2.5, -0.5],
-    ],
-    []
-  );
-
-  useFrame(({ clock }) => {
-    if (!groupRef.current) return;
-    const t = clock.getElapsedTime();
-    groupRef.current.rotation.y = t * 0.25 + mouse.current.x * 0.3;
-    groupRef.current.rotation.x = mouse.current.y * 0.2;
-  });
-
-  return (
-    <group ref={groupRef}>
-      {positions.map(([x, y, z], i) => (
-        <mesh key={i} position={[x, y, z]}>
-          <octahedronGeometry args={[0.18 + i * 0.04]} />
-          <meshStandardMaterial
-            color="#00aaff"
-            emissive="#0055aa"
-            emissiveIntensity={0.6}
-            wireframe
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Scene wrapper — handles canvas internals
-───────────────────────────────────────────── */
-function Scene({ mouse }: { mouse: React.RefObject<{ x: number; y: number }> }) {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    camera.position.set(0, 0, 6);
-  }, [camera]);
-
-  return (
-    <>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[5, 5, 5]} intensity={1.5} color="#00aaff" />
-      <pointLight position={[-5, -3, -5]} intensity={0.8} color="#6644ff" />
-      <Stars radius={80} depth={40} count={2500} factor={3} fade speed={0.5} />
-      <Float speed={1.4} rotationIntensity={0.15} floatIntensity={0.4}>
-        <HeroModel mouse={mouse} />
-      </Float>
-      <Satellites mouse={mouse} />
-    </>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Public component — wraps Canvas
+   Public component — raw Three.js + three-forcegraph
 ───────────────────────────────────────────── */
 export default function HeroScene() {
-  const mouse = useMouseNDCRef();
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+
+    /* ── renderer ── */
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(el.clientWidth, el.clientHeight);
+    renderer.setClearColor(0x000000, 0);
+    el.appendChild(renderer.domElement);
+
+    /* ── scene / camera / lights ── */
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      55,
+      el.clientWidth / el.clientHeight,
+      0.1,
+      3000
+    );
+    camera.position.set(0, 0, 220);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const ptLight = new THREE.PointLight(0x00aaff, 2, 800);
+    ptLight.position.set(100, 100, 100);
+    scene.add(ptLight);
+
+    /* ── star field ── */
+    const starGeo = new THREE.BufferGeometry();
+    const starVerts: number[] = [];
+    for (let i = 0; i < 3000; i++) {
+      starVerts.push(
+        (Math.random() - 0.5) * 2000,
+        (Math.random() - 0.5) * 2000,
+        (Math.random() - 0.5) * 2000
+      );
+    }
+    starGeo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(starVerts, 3)
+    );
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, sizeAttenuation: true })
+    );
+    scene.add(stars);
+
+    /* ── force graph ── */
+    const graphData = buildGraphData(60, 80);
+
+    const Graph = new ThreeForceGraph()
+      .graphData(graphData)
+      .nodeColor((node) =>
+        GROUP_COLORS[((node as { group?: number }).group ?? 0) % GROUP_COLORS.length]
+      )
+      .nodeOpacity(0.85)
+      .nodeResolution(12)
+      .linkColor(() => "#ffffff")
+      .linkOpacity(0.15)
+      .linkWidth(0.4);
+
+    scene.add(Graph);
+
+    /* ── mouse for gentle camera orbit ── */
+    const mouse = { x: 0, y: 0 };
+    let mousePending = false;
+    const onMouseMove = (e: MouseEvent) => {
+      if (mousePending) return;
+      mousePending = true;
+      requestAnimationFrame(() => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        mousePending = false;
+      });
+    };
+    window.addEventListener("mousemove", onMouseMove);
+
+    /* ── resize handler ── */
+    const onResize = () => {
+      if (!el) return;
+      camera.aspect = el.clientWidth / el.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(el.clientWidth, el.clientHeight);
+    };
+    window.addEventListener("resize", onResize);
+
+    /* ── animation loop ── */
+    let frameId = 0;
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      frameId = requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      /* slow auto-rotation + mouse tilt */
+      Graph.rotation.y = t * 0.06 + mouse.x * 0.4;
+      Graph.rotation.x = mouse.y * 0.25;
+
+      Graph.tickFrame();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    /* ── cleanup ── */
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("resize", onResize);
+
+      /* dispose Three.js resources */
+      scene.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) {
+          const mats = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
+          mats.forEach((m: THREE.Material) => m.dispose());
+        }
+      });
+
+      renderer.dispose();
+      if (el.contains(renderer.domElement)) {
+        el.removeChild(renderer.domElement);
+      }
+    };
+  }, []);
 
   return (
-    <div className="absolute inset-0 w-full h-full" aria-hidden="true">
-      <Canvas
-        gl={{ antialias: true, alpha: true }}
-        dpr={[1, 2]}
-        camera={{ fov: 55, near: 0.1, far: 200, position: [0, 0, 6] }}
-      >
-        <Scene mouse={mouse} />
-      </Canvas>
-    </div>
+    <div
+      ref={mountRef}
+      className="absolute inset-0 w-full h-full"
+      aria-hidden="true"
+    />
   );
 }
