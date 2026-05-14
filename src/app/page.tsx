@@ -24,7 +24,7 @@ export default function Home() {
         <HeroScene />
 
         {/* Overlay text */}
-        <div className="relative z-10 flex flex-col items-center gap-6 px-6 text-center pointer-events-none select-none">
+        <div className="relative z-10 w-full flex flex-col items-center gap-6 px-6 text-center pointer-events-none select-none">
           <span
             className="font-mono text-xs tracking-[0.3em] uppercase"
             style={{ color: "var(--accent)" }}
