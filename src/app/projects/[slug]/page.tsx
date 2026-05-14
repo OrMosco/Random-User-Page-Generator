@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { projects } from "@/data/projects";
 
+const MAX_RELATED_PROJECTS = 3;
+
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
@@ -36,7 +38,7 @@ export default async function ProjectPage({
         p.slug !== project.slug &&
         p.tags.some((t) => project.tags.includes(t))
     )
-    .slice(0, 3);
+    .slice(0, MAX_RELATED_PROJECTS);
 
   return (
     <div

@@ -196,14 +196,21 @@ export default function HeroScene() {
     /* ── mouse tracking + hover raycasting ── */
     const mouse = { x: 0, y: 0 };
 
+    /** Convert a MouseEvent to normalised device coordinates relative to the canvas. */
+    const getCanvasNDC = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      return new THREE.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1
+      );
+    };
+
     const onMouseMove = (e: MouseEvent) => {
+      /* camera orbit uses window-normalised coords */
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-      const rect = el.getBoundingClientRect();
-      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+      raycaster.setFromCamera(getCanvasNDC(e), camera);
       const hits = raycaster.intersectObjects(Graph.children, true);
 
       let hitTitle: string | null = null;
@@ -219,6 +226,7 @@ export default function HeroScene() {
         if (hitTitle) break;
       }
 
+      const rect = el.getBoundingClientRect();
       if (hitTitle) {
         renderer.domElement.style.cursor = "pointer";
         tooltip.style.display = "block";
@@ -234,10 +242,7 @@ export default function HeroScene() {
 
     /* ── click → navigate to project page ── */
     const onClick = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+      raycaster.setFromCamera(getCanvasNDC(e), camera);
       const hits = raycaster.intersectObjects(Graph.children, true);
 
       for (const hit of hits) {
@@ -253,10 +258,14 @@ export default function HeroScene() {
     };
     el.addEventListener("click", onClick);
 
-    /* ── scroll → camera zoom out ── */
+    /* ── scroll → camera zoom out (RAF-batched) ── */
+    let scrollRafId = 0;
     const onScroll = () => {
-      const progress = Math.min(window.scrollY / window.innerHeight, 1);
-      targetCameraZ = 220 + progress * 320;
+      cancelAnimationFrame(scrollRafId);
+      scrollRafId = requestAnimationFrame(() => {
+        const progress = Math.min(window.scrollY / window.innerHeight, 1);
+        targetCameraZ = 220 + progress * 320;
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
 
@@ -312,6 +321,7 @@ export default function HeroScene() {
     /* ── cleanup ── */
     return () => {
       cancelAnimationFrame(frameId);
+      cancelAnimationFrame(scrollRafId);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
@@ -338,5 +348,12 @@ export default function HeroScene() {
     };
   }, []);
 
-  return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
+  return (
+    <div
+      ref={mountRef}
+      className="absolute inset-0 w-full h-full"
+      role="region"
+      aria-label="Interactive project graph — click a node to explore a project"
+    />
+  );
 }
