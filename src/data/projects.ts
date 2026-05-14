@@ -6,6 +6,8 @@ export interface Project {
   year: string;
   desc: string;
   color: string;
+  liveUrl?: string;
+  githubUrl?: string;
 }
 
 export const projects: Project[] = [
@@ -80,5 +82,16 @@ export const projects: Project[] = [
     year: "2023",
     desc: "Real-time terrain generation using multi-octave Perlin noise with hydraulic erosion simulation and dynamic level-of-detail. Export flythrough videos directly from the browser via the MediaRecorder API.",
     color: "#ff9944",
+  },
+  {
+    id: 8,
+    slug: "2d-plan-viewer",
+    title: "2D Plan Viewer",
+    tags: ["React", "TypeScript", "SVG", "Canvas"],
+    year: "2025",
+    desc: "Interactive 2D architectural plan viewer with pan, zoom, and layer-toggle controls. Upload DXF or SVG floor plans and inspect every element in a clean, responsive interface built for spatial data exploration.",
+    color: "#00ccff",
+    liveUrl: "https://spacial-2d-viewer-upgrade.netlify.app/",
+    githubUrl: "https://github.com/OrMosco/2D-plan-viewer",
   },
 ];
