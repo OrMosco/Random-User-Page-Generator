@@ -10,7 +10,7 @@
 **Status:** Draft  
 **Last Updated:** 2026-05-14
 
-Blueprint Lab is an interactive studio/portfolio site that communicates design and computational research through pure geometry, systemic transparency, and exposed technical process — rather than polished marketing imagery. The site itself is a demonstration of the studio's methodology.
+Blueprint Lab is an interactive studio/portfolio site that showcases technical work, 3D design, and programming projects to clients, employers, and collaborators. It communicates design and computational research through pure geometry, systemic transparency, and exposed technical process — rather than polished marketing imagery. The site itself is a demonstration of the creator's methodology and skill.
 
 ---
 
@@ -20,6 +20,8 @@ Blueprint Lab is an interactive studio/portfolio site that communicates design a
 |------|--------|
 | Communicate the studio's research-driven approach | Avg. session duration ≥ 3 min |
 | Showcase projects with technical depth | ≥ 5 interactive project case studies at launch |
+| Attract job opportunities and client inquiries | ≥ 1 inbound hiring/client contact per month post-launch |
+| Demonstrate Three.js / 3D programming skills | ≥ 3 live interactive 3D model showcases at launch |
 | Establish a distinct visual identity | Qualitative brand recognition feedback from target audience |
 | Perform fast across devices | Lighthouse Performance score ≥ 90 on desktop and mobile |
 
@@ -27,67 +29,86 @@ Blueprint Lab is an interactive studio/portfolio site that communicates design a
 
 ## 3. Target Audience
 
+- **Potential clients & customers** seeking custom tech, design, or software solutions
+- **Tech recruiters and hiring managers** in software engineering, frontend, and creative-tech roles
+- **Developers and engineers** interested in generative / parametric design and Three.js / WebGL work
 - Academic researchers and computational designers
 - Tech-forward architecture and product studios
-- Developers and engineers interested in generative / parametric design
-- Potential collaborators, clients, and hires
+- Potential collaborators and open-source contributors
 
 ---
 
 ## 4. Visual Language & Aesthetics
 
 ### 4.1 Core Concept
-**"Blueprint Lab"** — The site's aesthetic is rooted in pure geometry, computational logic, and systemic transparency. Every visual decision should feel derived from process rather than decoration.
+**"Blueprint Lab — Modern with a Twist"** — The site looks and feels like a polished, modern web app (smooth transitions, clean layout, dark/light mode) but with an unexpected edge: live, interactive Three.js 3D scenes embedded directly into the UI instead of static images or videos. Visitors should immediately feel the difference between this and a typical portfolio.
 
-### 4.2 Object Rendering
-- Avoid photorealistic textures unless they directly serve research communication.
-- Use **exposed wireframes and edge geometry** (e.g., `EdgesGeometry` or R3F's `<lineSegments>`) to reveal structural logic.
-- Prefer additive, line-based representations over filled/shaded surfaces.
-- Animations should reflect algorithmic or parametric processes — no gratuitous motion.
-- Color palette: limited and systematic (e.g., monochrome base with a single accent, or blueprint blue/white on dark).
+### 4.2 The "Twist"
+- **3D models replace hero images** — the first thing visitors see is an interactive Three.js scene they can orbit, zoom, and interact with.
+- **Scroll-driven 3D transitions** — as users scroll, 3D objects morph, rotate, or assemble in response.
+- **Unexpected moments of depth** — mundane UI elements (cards, section dividers) have subtle 3D parallax or geometry layered beneath them.
+- **"Under the hood" reveals** — hovering a project card briefly switches from a polished render to its wireframe/edge view, exposing the technical construction.
 
-### 4.3 Typography
-- Monospace or geometric sans-serif typefaces preferred (to reinforce the computational aesthetic).
-- Type hierarchy should be strict and grid-aligned.
-- No decorative typefaces.
+### 4.3 Object Rendering
+- Use **exposed wireframes and edge geometry** (`EdgesGeometry` or R3F `<lineSegments>`) as accent and "reveal" states.
+- Primary display can use standard materials (MeshStandardMaterial, MeshPhysicalMaterial) for a polished modern look — the wireframe is the twist, not the baseline.
+- Animations should feel fluid and purposeful: eased, spring-physics-based, never jarring.
+- Color palette: dark-mode-first with vivid accent colors (e.g., electric blue, neon cyan, or amber) against a near-black background. Light mode inverts to an off-white/cream base with the same accent colors, ensuring contrast and readability in both themes. The toggle button is always visible in the navigation bar.
 
-### 4.4 Layout
-- Grid-based, modular layout system.
-- Generous whitespace; density is reserved for data/diagram sections.
-- Responsive: mobile-first with a desktop-optimized 3D/canvas experience.
+### 4.4 Typography
+- Clean, modern sans-serif for body and headings (e.g., Inter, Geist, or DM Sans).
+- Monospace accents for code, labels, and technical callouts — reinforcing the programming angle.
+- Large, confident type hierarchy. Generous leading.
+
+### 4.5 Layout
+- Full-bleed sections with smooth scroll snapping.
+- Grid-based, modular card system for project and skill showcases.
+- Responsive: mobile-first layout with an enhanced desktop experience where 3D canvases are fully interactive.
 
 ---
 
 ## 5. Site Structure & Pages
 
 ### 5.1 Home (`/`)
-- Full-viewport interactive 3D canvas (Three.js / React Three Fiber).
-- Wireframe geometry scene that responds to user cursor/scroll.
-- Brief studio tagline overlaid in monospace type.
-- Navigation anchors.
+- Full-viewport interactive Three.js / R3F 3D scene as the hero — visitors can orbit and interact with it immediately.
+- Scroll-driven animation: 3D objects transform or assemble as the user scrolls through intro sections.
+- Bold headline + one-liner value proposition ("I build things on the web — and in 3D.").
+- Smooth-scroll navigation to Work, 3D Showcase, and Contact sections.
+- **Dark/Light mode toggle button** in the navbar — switches the entire site theme instantly; preference saved to `localStorage`.
+- Skills/tech strip: animated ticker or icon grid (React, Three.js, Node, etc.).
 
-### 5.2 Work (`/work`)
-- Grid of project cards, each displaying: project name, year, and a looping wireframe thumbnail.
-- Filter by discipline (e.g., Computational, Product, Research, Installation).
+### 5.2 Work / Portfolio (`/work`)
+- Grid of project cards with polished preview images or looping 3D thumbnails.
+- On hover: card flips or transitions to wireframe view (the "twist").
+- Filter by type: Web App · 3D / WebGL · Programming · Design.
+- Each card links to a detailed project page.
 
-### 5.3 Project Detail (`/work/:slug`)
-- Full-width 3D model or diagram viewer (wireframe/edge mode).
-- Research narrative in long-form text alongside diagrammatic visuals.
-- Technical stack and process notes exposed inline.
+### 5.3 3D Showcase (`/3d`)
+- Dedicated gallery of live, interactive Three.js 3D models — the centrepiece of the site's "twist".
+- Each showcase item is an embedded R3F canvas the visitor can orbit, zoom, and interact with.
+- **Showcase scenes to include at launch (minimum 3):**
+  1. **Geometry Explorer** — animated, procedurally generated geometric forms (icosahedra, toruses, knots) with material/wireframe toggle.
+  2. **Particle System** — interactive particle field that reacts to mouse movement.
+  3. **3D Skills Visualization** — tech stack represented as labeled 3D nodes in a graph/constellation layout.
+- Each scene includes a caption, tech used, and a link to source code (GitHub).
+
+### 5.4 Project Detail (`/work/:slug`)
+- Full-width 3D model viewer or diagram (orbit controls enabled).
+- Project overview, tech stack, problem solved, and outcome.
+- Inline code snippets or live demo link.
+- "Wireframe mode" toggle to expose the technical construction.
 - Related projects footer.
 
-### 5.4 About (`/about`)
-- Studio mission and methodology statement.
-- Team members with roles.
-- Research areas listed as a structured taxonomy.
-
-### 5.5 Lab / Notes (`/lab`)
-- Short-form technical posts, experiments, and generative sketches.
-- Each post can include an embeddable live canvas or code snippet.
+### 5.5 About (`/about`)
+- Personal intro: who I am, what I build, what I'm looking for (open to work / freelance).
+- Skills taxonomy: Languages · Frameworks · 3D / WebGL · Tools.
+- Timeline or experience highlights.
+- Download résumé / CV button.
 
 ### 5.6 Contact (`/contact`)
-- Minimal form: Name, Email, Message, Area of interest.
-- Studio location and open-source/research contribution links.
+- Minimal form: Name, Email, Subject (dropdown: Job Opportunity · Project Inquiry · Collaboration · Other), Message.
+- Direct email link and social/GitHub/LinkedIn handles.
+- Subtle 3D background animation in the contact section.
 
 ---
 
@@ -99,7 +120,7 @@ Blueprint Lab is an interactive studio/portfolio site that communicates design a
 | F-02 | Wireframe/edge rendering mode for all 3D objects | Must Have |
 | F-03 | Project filter and search on Work page | Must Have |
 | F-04 | Responsive layout (mobile, tablet, desktop) | Must Have |
-| F-05 | Dark mode as default; optional light mode toggle | Should Have |
+| F-05 | Dark/Light mode toggle button — persistent, accessible, visible on all pages | Must Have |
 | F-06 | Live embeddable code sketches in Lab posts | Should Have |
 | F-07 | Keyboard navigation and WCAG 2.1 AA accessibility | Must Have |
 | F-08 | Contact form with validation and email delivery | Must Have |
@@ -125,7 +146,7 @@ Blueprint Lab is an interactive studio/portfolio site that communicates design a
 | Framework | Next.js (App Router) |
 | 3D Rendering | Three.js via React Three Fiber (R3F) |
 | Edge/Wireframe | `EdgesGeometry`, `LineSegments`, `<lineSegments>` in R3F |
-| Styling | Tailwind CSS or CSS Modules (systematic, no utility bloat) |
+| Styling | Tailwind CSS with CSS custom properties for dark/light theme tokens |
 | CMS | Contentlayer (MDX) or Sanity.io |
 | Deployment | Vercel |
 | Animation | Framer Motion + R3F `useFrame` |
