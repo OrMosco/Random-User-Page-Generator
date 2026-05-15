@@ -1,5 +1,8 @@
+ "use client";
+
 import HeroScene from "@/components/HeroSceneDynamic";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { projects } from "@/data/projects";
 
 const skills = [
@@ -11,93 +14,153 @@ const skills = [
   { name: "Python", level: 70 },
 ];
 
+const HERO_SCROLL_ANIMATION = {
+  overlayTranslateVh: 65,
+  overlayFadeRate: 1.25,
+  indicatorTranslateVh: 20,
+  indicatorFadeRate: 1.5,
+} as const;
+
 export default function Home() {
+  const heroRef = useRef<HTMLElement>(null);
+  const [heroProgress, setHeroProgress] = useState(0);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const updateProgress = () => {
+      const hero = heroRef.current;
+      if (!hero) return;
+
+      const rect = hero.getBoundingClientRect();
+      const scrollDistance = window.innerHeight;
+      const traveled = Math.min(Math.max(-rect.top, 0), scrollDistance);
+      setHeroProgress(traveled / scrollDistance);
+    };
+
+    const onScroll = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateProgress);
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
   return (
     <>
       {/* ── HERO ───────────────────────────────────────── */}
       <section
+        ref={heroRef}
         id="hero"
-        className="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
+        className="relative h-[200vh] w-full"
         style={{ background: "var(--background)" }}
       >
-        {/* Three.js canvas fills the section */}
-        <HeroScene />
+        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+          {/* Three.js canvas fills the section */}
+          <HeroScene />
 
-        {/* Overlay text */}
-        <div className="relative z-10 w-full flex flex-col items-center gap-6 px-6 text-center pointer-events-none select-none">
-          <span
-            className="font-mono text-xs tracking-[0.3em] uppercase"
-            style={{ color: "var(--accent)" }}
+          {/* Overlay text */}
+          <div
+            className="relative z-10 w-full flex flex-col items-center gap-6 px-6 text-center pointer-events-none select-none"
+            style={{
+              transform: `translate3d(0, -${heroProgress * HERO_SCROLL_ANIMATION.overlayTranslateVh}vh, 0)`,
+              opacity: Math.max(
+                0,
+                1 - heroProgress * HERO_SCROLL_ANIMATION.overlayFadeRate
+              ),
+            }}
           >
-            Available for work
-          </span>
-          <h1
-            className="text-5xl md:text-7xl font-bold leading-tight tracking-tight"
-            style={{ color: "var(--foreground)" }}
-          >
-            I build things
-            <br />
-            <span style={{ color: "var(--accent)" }}>on the web</span>
-            <br />
-            — and in 3D.
-          </h1>
-          <p
-            className="max-w-md text-base md:text-lg font-mono"
-            style={{ color: "var(--muted)" }}
-          >
-            Full-stack developer & creative technologist. Crafting interactive
-            experiences with React, Three.js, and modern web tech.
-          </p>
-          <div className="pointer-events-auto flex gap-4 pt-2">
-            <a
-              href="#work"
-              className="rounded-full px-6 py-3 text-sm font-mono tracking-widest uppercase transition-all duration-200 hover:scale-105"
-              style={{
-                background: "var(--accent)",
-                color: "#fff",
-              }}
+            <span
+              className="font-mono text-xs tracking-[0.3em] uppercase"
+              style={{ color: "var(--accent)" }}
             >
-              See my work
-            </a>
-            <a
-              href="#contact"
-              className="rounded-full px-6 py-3 text-sm font-mono tracking-widest uppercase border transition-all duration-200 hover:scale-105"
-              style={{
-                borderColor: "var(--border)",
-                color: "var(--foreground)",
-              }}
+              Available for work
+            </span>
+            <h1
+              className="text-5xl md:text-7xl font-bold leading-tight tracking-tight"
+              style={{ color: "var(--foreground)" }}
             >
-              Hire me
-            </a>
+              I build things
+              <br />
+              <span style={{ color: "var(--accent)" }}>on the web</span>
+              <br />
+              — and in 3D.
+            </h1>
+            <p
+              className="max-w-md text-base md:text-lg font-mono"
+              style={{ color: "var(--muted)" }}
+            >
+              Full-stack developer & creative technologist. Crafting interactive
+              experiences with React, Three.js, and modern web tech.
+            </p>
+            <div className="pointer-events-auto flex gap-4 pt-2">
+              <a
+                href="#work"
+                className="rounded-full px-6 py-3 text-sm font-mono tracking-widest uppercase transition-all duration-200 hover:scale-105"
+                style={{
+                  background: "var(--accent)",
+                  color: "#fff",
+                }}
+              >
+                See my work
+              </a>
+              <a
+                href="#contact"
+                className="rounded-full px-6 py-3 text-sm font-mono tracking-widest uppercase border transition-all duration-200 hover:scale-105"
+                style={{
+                  borderColor: "var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                Hire me
+              </a>
+            </div>
+            {/* node hint */}
+            <p
+              className="font-mono text-[10px] tracking-[0.25em] uppercase"
+              style={{ color: "var(--muted)", opacity: 0.6 }}
+            >
+              ↗ click a node to explore a project
+            </p>
           </div>
-          {/* node hint */}
-          <p
-            className="font-mono text-[10px] tracking-[0.25em] uppercase"
-            style={{ color: "var(--muted)", opacity: 0.6 }}
-          >
-            ↗ click a node to explore a project
-          </p>
-        </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10 pointer-events-none animate-bounce">
-          <span
-            className="font-mono text-[10px] tracking-widest uppercase"
-            style={{ color: "var(--muted)" }}
+          {/* Scroll indicator */}
+          <div
+            className="absolute bottom-8 left-1/2 flex flex-col items-center gap-1 z-10 pointer-events-none animate-bounce"
+            style={{
+              transform: `translate3d(-50%, -${heroProgress * HERO_SCROLL_ANIMATION.indicatorTranslateVh}vh, 0)`,
+              opacity: Math.max(
+                0,
+                1 - heroProgress * HERO_SCROLL_ANIMATION.indicatorFadeRate
+              ),
+            }}
           >
-            scroll
-          </span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ color: "var(--muted)" }}
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
+            <span
+              className="font-mono text-[10px] tracking-widest uppercase"
+              style={{ color: "var(--muted)" }}
+            >
+              scroll
+            </span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ color: "var(--muted)" }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
         </div>
       </section>
 
@@ -355,4 +418,3 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
-
