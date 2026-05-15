@@ -124,7 +124,7 @@ export default function Home() {
 
           {/* Scroll indicator */}
           <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10 pointer-events-none animate-bounce"
+            className="absolute bottom-8 left-1/2 flex flex-col items-center gap-1 z-10 pointer-events-none animate-bounce"
             style={{
               transform: `translate3d(-50%, -${heroProgress * 20}vh, 0)`,
               opacity: Math.max(0, 1 - heroProgress * 1.5),
