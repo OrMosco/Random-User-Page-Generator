@@ -14,16 +14,19 @@ const skills = [
   { name: "Python", level: 70 },
 ];
 
+const HERO_SCROLL_ANIMATION = {
+  overlayTranslateVh: 65,
+  overlayFadeRate: 1.25,
+  indicatorTranslateVh: 20,
+  indicatorFadeRate: 1.5,
+} as const;
+
 export default function Home() {
-  const OVERLAY_TRANSLATE_VH = 65;
-  const OVERLAY_FADE_RATE = 1.25;
-  const INDICATOR_TRANSLATE_VH = 20;
-  const INDICATOR_FADE_RATE = 1.5;
   const heroRef = useRef<HTMLElement>(null);
   const [heroProgress, setHeroProgress] = useState(0);
 
   useEffect(() => {
-    let rafId = 0;
+    let rafId: number | null = null;
 
     const updateProgress = () => {
       const hero = heroRef.current;
@@ -36,7 +39,7 @@ export default function Home() {
     };
 
     const onScroll = () => {
-      cancelAnimationFrame(rafId);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(updateProgress);
     };
 
@@ -45,7 +48,7 @@ export default function Home() {
     window.addEventListener("resize", onScroll);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
@@ -68,8 +71,11 @@ export default function Home() {
           <div
             className="relative z-10 w-full flex flex-col items-center gap-6 px-6 text-center pointer-events-none select-none"
             style={{
-              transform: `translate3d(0, -${heroProgress * OVERLAY_TRANSLATE_VH}vh, 0)`,
-              opacity: Math.max(0, 1 - heroProgress * OVERLAY_FADE_RATE),
+              transform: `translate3d(0, -${heroProgress * HERO_SCROLL_ANIMATION.overlayTranslateVh}vh, 0)`,
+              opacity: Math.max(
+                0,
+                1 - heroProgress * HERO_SCROLL_ANIMATION.overlayFadeRate
+              ),
             }}
           >
             <span
@@ -130,8 +136,11 @@ export default function Home() {
           <div
             className="absolute bottom-8 left-1/2 flex flex-col items-center gap-1 z-10 pointer-events-none animate-bounce"
             style={{
-              transform: `translate3d(-50%, -${heroProgress * INDICATOR_TRANSLATE_VH}vh, 0)`,
-              opacity: Math.max(0, 1 - heroProgress * INDICATOR_FADE_RATE),
+              transform: `translate3d(-50%, -${heroProgress * HERO_SCROLL_ANIMATION.indicatorTranslateVh}vh, 0)`,
+              opacity: Math.max(
+                0,
+                1 - heroProgress * HERO_SCROLL_ANIMATION.indicatorFadeRate
+              ),
             }}
           >
             <span
